@@ -118,7 +118,7 @@ namespace Hangman.Workflow
                     {
                         var saga = ctx.Instance;
 
-                        var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.CreateGame));
+                        var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.Dictionary));
                         await ep.Send(new SetupGame
                         {
                             CorrelationId = saga.CorrelationId
@@ -129,10 +129,19 @@ namespace Hangman.Workflow
         private EventActivityBinder<GameSagaInstance, WordSelected> HandleWordSelected() =>
             When(WordSelectedReceived)
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Word selected received")))
-                    .Then(ctx =>
+                    .ThenAsync(async ctx =>
                     {
-                        ctx.Instance.Word = ctx.Data.Word;
-                        ctx.Instance.TurnsLeft = 10;
+                        var saga = ctx.Instance;
+
+                        saga.Word = ctx.Data.Word;
+                        saga.TurnsLeft = 10;
+
+                        var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.Processor));
+                        await ep.Send(new SetupProcessing
+                        {
+                            CorrelationId = saga.CorrelationId,
+                            Word = saga.Word
+                        });
                     });
 
         private EventActivityBinder<GameSagaInstance, MakeTurn> HandleMakeTurn() =>
@@ -142,7 +151,7 @@ namespace Hangman.Workflow
                     {
                         var saga = ctx.Instance;
 
-                        var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.ProcessTurn));
+                        var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.Processor));
                         await ep.Send(new ProcessTurn
                         {
                             CorrelationId = saga.CorrelationId
@@ -158,7 +167,10 @@ namespace Hangman.Workflow
                     var msg = ctx.Data;
                     var saga = ctx.Instance;
 
-                    saga.TurnsLeft--;
+                    if (msg.Accepted)
+                    {
+                        saga.TurnsLeft--;
+                    }
 
                     await ctx.Publish(new TurnInfo
                     {

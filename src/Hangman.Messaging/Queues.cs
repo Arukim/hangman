@@ -5,9 +5,9 @@
     /// </summary>
     public static class Queues
     {
-        public const string CreateGame = "createGame";
-        public const string ProcessTurn = "processTurn";
-        public const string TurnInfo = "turnInfo";
-        public const string GameSaga = "gameSaga";
+        public const string Dictionary = "dictionary";
+        public const string Processor = "processor";
+        public const string UI = "ui";
+        public const string GameSaga = "orchestrator.gameSaga";
     }
 }

@@ -9,17 +9,15 @@
 
   <ItemGroup>
     <PackageReference Include="MassTransit" Version="5.3.2" />
-    <PackageReference Include="MassTransit.MongoDb" Version="5.3.2" />
+    <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="5.3.2" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="5.3.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Hangman.Core\Hangman.Core.csproj" />
-    <ProjectReference Include="..\Hangman.Persistence\Hangman.Persistence.csproj" />
-    <ProjectReference Include="..\Hangman.Workflow\Hangman.Workflow.csproj" />
+    <ProjectReference Include="..\Hangman.Dictionary.Consumers\Hangman.Dictionary.Consumers.csproj" />
+    <ProjectReference Include="..\Hangman.Messaging\Hangman.Messaging.csproj" />
   </ItemGroup>
 
 </Project>

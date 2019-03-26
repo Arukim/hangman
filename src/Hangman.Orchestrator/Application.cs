@@ -1,23 +1,22 @@
 ﻿using Hangman.Core;
-using Microsoft.Extensions.Configuration;
+using Hangman.Messaging;
+using Hangman.Persistence;
+using Hangman.Workflow;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Hangman.Orchestrator
 {
     class Application : BaseServiceApplication<Program, OrchestratorService>
     {
-        protected override string Name => "Orchestrator";
+        protected override string Name => "Orchestrator Service";
 
         protected override void BootstrapServices(IServiceCollection services)
         {
-            var mongoSection = configuration.GetSection(Constants.ConfigSections.Mongo);
-            if (!mongoSection.Exists())
-                throw new ApplicationException($"Required section '{mongoSection.Path}' not found in configuration");
-
-            var rmqSection = configuration.GetSection(Constants.ConfigSections.Rabbit);
-            if (!rmqSection.Exists())
-                throw new ApplicationException($"Required section '{rmqSection.Path}' not found in configuration");
+            services
+                .AddSingleton<GameStateMachine>()
+                .AddSingleton<OrchestratorService>()
+                .AddMessaging(configuration)
+                .AddPersistence(configuration);
         }
     }
 }

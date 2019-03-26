@@ -34,7 +34,7 @@ namespace Hangman.Orchestrator
 
         public async Task StartAsync()
         {
-            var repository = new MongoDbSagaRepository<GameSagaInstance>(mongoDbConfig.Endpoint, mongoDbConfig.Database);
+            var repository = new MongoDbSagaRepository<GameSagaInstance>(mongoDbConfig.Endpoint, mongoDbConfig.Database, Collections.GameSagas);
 
             busControl = Bus.Factory.CreateUsingRabbitMq(cfg =>
             {

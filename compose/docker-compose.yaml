@@ -1,0 +1,17 @@
+# Use this compose file to setup local development environment
+version: '3.6' # defines file features
+services:
+  rmq:
+    image: "rabbitmq:3-management"
+    environment:
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+  mongo:
+    image: mongo:4.0.5
+    restart: always
+    ports: 
+      - "27017:27017"

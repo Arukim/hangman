@@ -14,16 +14,16 @@ namespace Tests
 {
     public class GameSagaTests
     {
-        protected Guid sagaId;
+        protected Guid correlationId;
         protected SagaTestHarness<GameSagaInstance> sagaTestHarness;
         protected GameStateMachine stateMachine;
         protected InMemoryTestHarness harness;
 
-        #region SetupAndCleanUp
+        #region SetUp and TearDown
         [SetUp]
         public async Task Setup()
         {
-            sagaId = Guid.NewGuid();
+            correlationId = Guid.NewGuid();
             stateMachine = new GameStateMachine(new Mock<ILogger<GameStateMachine>>().Object,
                 Options.Create(new RabbitMQConfiguration
                 {
@@ -48,10 +48,10 @@ namespace Tests
             var testWord = "hayabusa";
             await SendAndConfirm(new Create
             {
-                CorrelationId = sagaId
+                CorrelationId = correlationId
             });
 
-            var saga = sagaTestHarness.Sagas.Contains(sagaId);
+            var saga = sagaTestHarness.Sagas.Contains(correlationId);
 
             Assert.AreEqual(nameof(stateMachine.Created), saga.CurrentState);
 
@@ -59,7 +59,7 @@ namespace Tests
 
             await SendAndConfirm(new WordSelected
             {
-                CorrelationId = sagaId,
+                CorrelationId = correlationId,
                 Word = testWord
             });
 
@@ -68,12 +68,13 @@ namespace Tests
 
             await SendAndConfirm(new MakeTurn
             {
-                CorrelationId = sagaId
+                CorrelationId = correlationId
             });
 
             await SendAndConfirm(new TurnProcessed
             {
-                CorrelationId = sagaId,
+                CorrelationId = correlationId,
+                Accepted = true,
                 HasWon = false
             });
             Assert.AreEqual(9, saga.TurnsLeft);
@@ -81,12 +82,12 @@ namespace Tests
 
             await SendAndConfirm(new MakeTurn
             {
-                CorrelationId = sagaId
+                CorrelationId = correlationId
             });
 
             await SendAndConfirm(new TurnProcessed
             {
-                CorrelationId = sagaId,
+                CorrelationId = correlationId,
                 HasWon = true
             });
         }
