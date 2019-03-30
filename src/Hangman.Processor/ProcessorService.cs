@@ -34,7 +34,7 @@ namespace Hangman.Processor
                     h.Password(rmqConfig.Password);
                 });
 
-                cfg.ReceiveEndpoint(host, Queues.Processor, ep =>
+                cfg.ReceiveEndpoint(host, rmqConfig.GetQueueName(Queues.Processor), ep =>
                 {
                     ep.PrefetchCount = (ushort)Environment.ProcessorCount;
 

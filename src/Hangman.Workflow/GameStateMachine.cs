@@ -124,7 +124,7 @@ namespace Hangman.Workflow
                             CorrelationId = saga.CorrelationId
                         });
                     })
-                    .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Create game sent")));
+                    .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Setup game sent")));
 
         private EventActivityBinder<GameSagaInstance, WordSelected> HandleWordSelected() =>
             When(WordSelectedReceived)

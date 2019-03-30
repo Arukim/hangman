@@ -33,7 +33,7 @@ namespace Hangman.Dictionary
                     h.Password(rmqConfig.Password);
                 });
 
-                cfg.ReceiveEndpoint(host, Queues.Dictionary, ep =>
+                cfg.ReceiveEndpoint(host, rmqConfig.GetQueueName(Queues.Dictionary), ep =>
                 {
                     ep.PrefetchCount = (ushort)Environment.ProcessorCount;
 

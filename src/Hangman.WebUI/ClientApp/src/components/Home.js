@@ -1,9 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { actionCreators } from '../store/Home';
 
 const Home = props => (
   <div>
-    <h1>Hello, world!</h1>
+        <h1>Hello, world!</h1>
+
+        <button className="btn btn-primary" onClick={props.createGame}>Create Game</button>
     <p>Welcome to your new single-page application, built with:</p>
     <ul>
       <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
@@ -20,4 +24,7 @@ const Home = props => (
   </div>
 );
 
-export default connect()(Home);
+export default connect(
+    state => state.home,
+    dispatch => bindActionCreators(actionCreators, dispatch)
+)(Home);

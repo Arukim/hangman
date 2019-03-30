@@ -1,5 +1,6 @@
 ﻿using Hangman.Core;
 using Hangman.Messaging;
+using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hangman.Dictionary
@@ -11,8 +12,10 @@ namespace Hangman.Dictionary
         protected override void BootstrapServices(IServiceCollection services)
         {
             services
+                .AddScoped<SetupGameConsumer>()
                 .AddSingleton<DictionaryService>()
-                .AddMessaging(configuration);
+                .AddMessaging(configuration)
+                .AddMassTransit();
         }
     }
 }

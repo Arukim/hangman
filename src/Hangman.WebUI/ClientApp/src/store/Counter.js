@@ -1,10 +1,18 @@
 const incrementCountType = 'INCREMENT_COUNT';
 const decrementCountType = 'DECREMENT_COUNT';
+const signalRIncrementCountType = 'SIGNALR_INCREMENT_COUNT';
+const signalRDecrementCountType = 'SIGNALR_DECREMENT_COUNT';
 const initialState = { count: 0 };
 
 export const actionCreators = {
-  increment: () => ({ type: incrementCountType }),
-  decrement: () => ({ type: decrementCountType })
+    increment: () => (dispatch, getState) => {
+        dispatch({ type: incrementCountType });
+        dispatch({ type: signalRIncrementCountType });
+    },
+    decrement: () => (dispatch, getState) => {
+        dispatch({ type: decrementCountType });
+        dispatch({ type: signalRDecrementCountType });
+    }
 };
 
 export const reducer = (state, action) => {

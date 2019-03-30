@@ -7,11 +7,8 @@ namespace Hangman.Persistence.Interfaces
     /// <summary>
     /// TODO - add abstraction layer
     /// </summary>
-    public interface IProcessorDbContext
+    public interface IProcessorDbContext : IDbContext
     {
-        MongoClient Client { get; }
-        IMongoDatabase Database { get; }
         IMongoCollection<TurnRegister> TurnRegisters { get; }
-        Task InitAsync();
     }
 }

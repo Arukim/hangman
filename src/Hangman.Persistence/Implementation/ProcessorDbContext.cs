@@ -4,25 +4,18 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System.Threading.Tasks;
 
-namespace Hangman.Persistence
+namespace Hangman.Persistence.Implementation
 {
-    internal class ProcessorDbContext : IProcessorDbContext
+    internal class ProcessorDbContext : BaseDbContext, IProcessorDbContext
     {
-        private readonly MongoDBConfiguration mongoConfig;
+        public ProcessorDbContext(IOptions<MongoDBConfiguration> mongoOptions) : base(mongoOptions) { }
 
-        public MongoClient Client { get; private set; }
-        public IMongoDatabase Database { get; private set; }
         public IMongoCollection<TurnRegister> TurnRegisters { get; private set; }
 
-        public ProcessorDbContext(IOptions<MongoDBConfiguration> mongoOptions)
+        public override async Task InitAsync()
         {
-            mongoConfig = mongoOptions.Value;
-        }
+            Init();
 
-        public async Task InitAsync()
-        {
-            Client = new MongoClient(mongoConfig.Endpoint);
-            Database = Client.GetDatabase(mongoConfig.Database);
             TurnRegisters = Database.GetCollection<TurnRegister>("turnRegisters");
             await TurnRegisters.Indexes.CreateOneAsync(new CreateIndexModel<TurnRegister>(
                 Builders<TurnRegister>.IndexKeys.Ascending(x => x.CorrelationId), new CreateIndexOptions
