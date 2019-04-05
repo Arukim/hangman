@@ -1,15 +1,17 @@
 using Hangman.Core;
 using Hangman.Messaging;
+using Hangman.Messaging.GameSaga;
 using Hangman.Persistence;
+using Hangman.WebUI.Consumers;
 using Hangman.WebUI.Controllers;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Hangman.WebUI
 {
@@ -28,7 +30,38 @@ namespace Hangman.WebUI
             services.AddSignalR();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddPersistence(Configuration);
-            services.AddMessageBus(Configuration);
+            services.AddMessaging(Configuration);
+
+
+            var rmqSection = Configuration.GetSection(Constants.ConfigSections.Rabbit);
+            var rmqConfig = rmqSection.Get<RabbitMQConfiguration>();
+
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<GameStartedConsumer>();
+
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    var host = cfg.Host(new Uri(rmqConfig.Endpoint), hostConfigurator =>
+                    {
+                        hostConfigurator.Username(rmqConfig.Username);
+                        hostConfigurator.Password(rmqConfig.Password);
+                    });
+
+                    cfg.ReceiveEndpoint(host, "queue-1", ep =>
+                    {
+                        ep.Consumer<GameStartedConsumer>(provider);
+                    });
+
+                    cfg.ConfigureEndpoints(provider);
+                }));
+
+                x.AddRequestClient<GameStarted>();
+
+            });
+
+            services.AddScoped<GameStartedConsumer>();
+
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -77,6 +110,9 @@ namespace Hangman.WebUI
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
+
+            var bus = app.ApplicationServices.GetService<IBusControl>();
+            bus.Start();
         }
     }
 }

@@ -10,5 +10,7 @@ namespace Hangman.Persistence.Entities
         public ObjectId Id { get; set; }
 
         public Guid CorrelationId { get; set; }
+        public string Word { get; set; }
+        public char[] GuessedWord { get; set; }
     }
 }

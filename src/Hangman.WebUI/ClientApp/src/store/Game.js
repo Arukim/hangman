@@ -2,10 +2,14 @@
 const responseGameInfo = 'RESPONSE_GAME_INFO';
 
 
+export const signalRGameStarted = 'GAME_STARTED';
+
+
 export const Status = {
     Loading: 'LOADING',
     NotFound: 'NOT_FOUND',
-    Init: 'Init'
+    Init: 'INIT',
+    InProgress: 'IN_PROGRESS'
 };
 
 const initialState = {
@@ -43,6 +47,13 @@ export const reducer = (state, action) => {
             id: action.id,
             gameInfo: action.gameInfo,
             status: Status.Init
+        };
+    }
+
+    if (action.type === signalRGameStarted) {
+        return {
+            ...state,
+            status: Status.InProgress
         };
     }
 

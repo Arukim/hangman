@@ -142,6 +142,13 @@ namespace Hangman.Workflow
                             CorrelationId = saga.CorrelationId,
                             Word = saga.Word
                         });
+
+                        await ctx.Publish(new GameStarted
+                        {
+                            CorrelationId = saga.CorrelationId,
+                            WordLength = saga.Word.Length,
+                            TotalTurns = saga.TurnsLeft
+                        });
                     });
 
         private EventActivityBinder<GameSagaInstance, MakeTurn> HandleMakeTurn() =>

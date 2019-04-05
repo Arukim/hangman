@@ -1,6 +1,5 @@
 ﻿using Hangman.Messaging;
 using Hangman.Messaging.GameSaga;
-using Hangman.Persistence;
 using Hangman.Persistence.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -14,14 +13,17 @@ namespace Hangman.Processor.Consumers
     {
         private readonly ILogger logger;
         private readonly RabbitMQConfiguration rmqConfig;
-        private readonly IProcessorDbContext dbContext;
+        private readonly IProcessorDbContext processorCtx;
+        private readonly IMainDbContext mainCtx;
 
         public ProcessTurnConsumer(ILogger<ProcessTurnConsumer> logger,
             IOptions<RabbitMQConfiguration> rmqOption,
-            IProcessorDbContext dbContext)
+            IProcessorDbContext processorCtx,
+            IMainDbContext mainCtx)
         {
             rmqConfig = rmqOption.Value;
-            this.dbContext = dbContext;
+            this.processorCtx = processorCtx;
+            this.mainCtx = mainCtx;
             this.logger = logger;
         }
 
@@ -30,12 +32,15 @@ namespace Hangman.Processor.Consumers
             var msg = ctx.Message;
             var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.GameSaga));
 
-            await dbContext.InitAsync();
+            await processorCtx.InitAsync();
 
             using (var scope = logger.BeginScope($"CorrelationId={msg.CorrelationId}"))
             {
-                var turnRegister = await dbContext.TurnRegisters
+                var turnRegister = await processorCtx.TurnRegisters
                     .Find(x => x.CorrelationId == msg.CorrelationId)
+                    .FirstAsync();
+
+                var game = await mainCtx.Games.Find(x => x.CorrelationId == msg.CorrelationId)
                     .FirstAsync();
 
                 if (turnRegister.Guesses.Contains(msg.Guess))
@@ -50,17 +55,28 @@ namespace Hangman.Processor.Consumers
                     return;
                 }
 
-                turnRegister.WordLeft.Replace(msg.Guess.ToString(), "");
+                turnRegister.WordLeft = turnRegister.WordLeft.Replace(msg.Guess.ToString(), "");
+
+                for (int i = 0; i < turnRegister.Word.Length; i++)
+                {
+                    if (turnRegister.Word[i] == msg.Guess)
+                    {
+                        game.GuessedWord[i] = msg.Guess;
+                    }
+                }
 
                 turnRegister.Guesses.Add(msg.Guess);
 
-                await dbContext.TurnRegisters
+                await processorCtx.TurnRegisters
                     .ReplaceOneAsync(x => x.CorrelationId == turnRegister.CorrelationId, turnRegister);
+
+                await mainCtx.Games.ReplaceOneAsync(x => x.CorrelationId == game.CorrelationId, game);
 
                 await ep.Send(new TurnProcessed
                 {
                     CorrelationId = msg.CorrelationId,
                     Accepted = false,
+                    CurrentWord = game.GuessedWord.ToString(),
                     HasWon = string.IsNullOrEmpty(turnRegister.WordLeft)
                 });
             }

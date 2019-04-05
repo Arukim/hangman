@@ -44,10 +44,12 @@ namespace Hangman.WebUI.Controllers
         }
 
         [HttpGet("game/{id}")]
-        public async Task<GameInfo> GetGame(ObjectId id)
+        public async Task<GameInfo> GetGame(string id)
         {
+            var gameId = new ObjectId(id);
+
             var game = await dbContext.Games
-                .Find(x => x.Id == id)
+                .Find(x => x.Id == gameId)
                 .FirstAsync();
 
             return new GameInfo

@@ -1,11 +1,12 @@
 ﻿using Hangman.Messaging;
 using Hangman.Messaging.GameSaga;
-using Hangman.Persistence;
 using Hangman.Persistence.Entities;
 using Hangman.Persistence.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hangman.Processor.Consumers
@@ -14,14 +15,17 @@ namespace Hangman.Processor.Consumers
     {
         private readonly ILogger logger;
         private readonly RabbitMQConfiguration rmqConfig;
-        private readonly IProcessorDbContext dbContext;
+        private readonly IProcessorDbContext procCtx;
+        private readonly IMainDbContext mainCtx;
 
         public SetupProcessingConsumer(ILogger<SetupProcessingConsumer> logger,
             IOptions<RabbitMQConfiguration> rmqOption,
-            IProcessorDbContext dbContext)
+            IProcessorDbContext procCtx,
+            IMainDbContext mainCtx)
         {
             rmqConfig = rmqOption.Value;
-            this.dbContext = dbContext;
+            this.procCtx = procCtx;
+            this.mainCtx = mainCtx;
             this.logger = logger;
         }
 
@@ -29,13 +33,22 @@ namespace Hangman.Processor.Consumers
         {
             var msg = ctx.Message;
 
-            await dbContext.InitAsync();
+            await procCtx.InitAsync();
 
             using (var scope = logger.BeginScope($"CorrelationId={msg.CorrelationId}"))
             {
                 var turnRegister = new TurnRegister { CorrelationId = msg.CorrelationId, WordLeft = msg.Word, Word = msg.Word };
 
-                await dbContext.TurnRegisters.InsertOneAsync(turnRegister);
+                await procCtx.TurnRegisters.InsertOneAsync(turnRegister);
+
+                var game = await mainCtx.Games.Find(x => x.CorrelationId == msg.CorrelationId)
+                    .FirstAsync();
+
+                game.Word = msg.Word;
+
+                game.GuessedWord = Enumerable.Range(0, msg.Word.Length).Select(x => '-').ToArray();
+
+                await mainCtx.Games.ReplaceOneAsync(x => x.CorrelationId == game.CorrelationId, game);
             }
         }
     }

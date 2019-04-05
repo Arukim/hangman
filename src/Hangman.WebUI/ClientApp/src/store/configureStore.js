@@ -64,14 +64,18 @@ export function signalRInvokeMiddleware(store) {
 export function signalRRegisterCommands(store, callback) {
 
     connection.on('IncrementCounter', data => {
-        store.dispatch({ type: 'INCREMENT_COUNT' })
+        store.dispatch({ type: 'INCREMENT_COUNT' });
         console.log("Count has been incremented");
-    })
+    });
 
     connection.on('DecrementCounter', data => {
-        store.dispatch({ type: 'DECREMENT_COUNT' })
+        store.dispatch({ type: 'DECREMENT_COUNT' });
         console.log("Count has been decremented");
-    })
+    });
+    
+    connection.on('GameStarted', data => {
+        store.dispatch({ ...data, type: Game.signalRGameStarted });
+    });
 
     connection.start().then(callback());
 
