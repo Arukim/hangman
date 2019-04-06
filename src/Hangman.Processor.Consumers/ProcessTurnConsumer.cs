@@ -49,6 +49,8 @@ namespace Hangman.Processor.Consumers
                     {
                         CorrelationId = msg.CorrelationId,
                         Accepted = false,
+                        GuessedWord = string.Join("", game.GuessedWord),
+                        Guesses = turnRegister.Guesses,
                         HasWon = false
                     });
 
@@ -75,8 +77,9 @@ namespace Hangman.Processor.Consumers
                 await ep.Send(new TurnProcessed
                 {
                     CorrelationId = msg.CorrelationId,
-                    Accepted = false,
-                    CurrentWord = game.GuessedWord.ToString(),
+                    Accepted = true,
+                    GuessedWord = string.Join("", game.GuessedWord),
+                    Guesses = turnRegister.Guesses,
                     HasWon = string.IsNullOrEmpty(turnRegister.WordLeft)
                 });
             }

@@ -5,5 +5,6 @@
     /// </summary>
     public class MakeTurn : BaseSagaEvent
     {
+        public char Guess { get; set; }
     }
 }

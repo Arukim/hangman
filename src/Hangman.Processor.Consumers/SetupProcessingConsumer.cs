@@ -6,6 +6,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,11 +34,20 @@ namespace Hangman.Processor.Consumers
         {
             var msg = ctx.Message;
 
+            var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.GameSaga));
+
             await procCtx.InitAsync();
 
             using (var scope = logger.BeginScope($"CorrelationId={msg.CorrelationId}"))
             {
-                var turnRegister = new TurnRegister { CorrelationId = msg.CorrelationId, WordLeft = msg.Word, Word = msg.Word };
+                var word = msg.Word.ToLowerInvariant();
+                var turnRegister = new TurnRegister
+                {
+                    CorrelationId = msg.CorrelationId,
+                    WordLeft = word,
+                    Word = word,
+                    Guesses = new List<char> { }
+                };
 
                 await procCtx.TurnRegisters.InsertOneAsync(turnRegister);
 
@@ -49,6 +59,12 @@ namespace Hangman.Processor.Consumers
                 game.GuessedWord = Enumerable.Range(0, msg.Word.Length).Select(x => '-').ToArray();
 
                 await mainCtx.Games.ReplaceOneAsync(x => x.CorrelationId == game.CorrelationId, game);
+
+                await ep.Send(new ProcessingSetup
+                {
+                    CorrelationId = msg.CorrelationId,
+                    GuessedWord = string.Join("", game.GuessedWord)
+                });
             }
         }
     }

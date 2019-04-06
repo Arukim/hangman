@@ -4,6 +4,7 @@ using Hangman.Messaging;
 using Hangman.Messaging.GameSaga;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 
 namespace Hangman.Workflow
 {
@@ -22,8 +23,14 @@ namespace Hangman.Workflow
 
         #region Saga States
 
+
         /// <summary>
-        /// Game is created and waiting for word selection
+        /// Game is waiting for setup to finish
+        /// </summary>
+        public State Creating { get; set; }
+
+        /// <summary>
+        /// Game is created and waiting for setup to finish
         /// </summary>
         public State Created { get; set; }
         /// <summary>
@@ -47,6 +54,10 @@ namespace Hangman.Workflow
         /// Quiz word for current session was selected
         /// </summary>
         public Event<WordSelected> WordSelectedReceived { get; set; }
+        /// <summary>
+        /// Processing has been setup
+        /// </summary>
+        public Event<ProcessingSetup> ProcessingSetupReceived { get; set; }
         /// <summary>
         /// Player submitted a turn
         /// </summary>
@@ -78,17 +89,22 @@ namespace Hangman.Workflow
             // First event creates a new saga
             Event(() => CreateSagaReceived, x => x.SelectId(m => m.Message.CorrelationId));
             Event(() => WordSelectedReceived);
+            Event(() => ProcessingSetupReceived);
             Event(() => MakeTurnReceived);
             Event(() => TurnProcessedRecevied);
 
             // Describe all events reactions
 
             Initially(
-                HandleCreated()
+                HandleCreate()
+                    .TransitionTo(Creating));
+
+            During(Creating,
+                HandleWordSelected()
                     .TransitionTo(Created));
 
             During(Created,
-                HandleWordSelected()
+                HandleProcessingSetup()
                     .TransitionTo(WaitingForTurn)
               );
 
@@ -111,7 +127,7 @@ namespace Hangman.Workflow
 
         #region Handlers 
 
-        private EventActivityBinder<GameSagaInstance, Create> HandleCreated() =>
+        private EventActivityBinder<GameSagaInstance, Create> HandleCreate() =>
             When(CreateSagaReceived)
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Saga created")))
                     .ThenAsync(async ctx =>
@@ -142,14 +158,23 @@ namespace Hangman.Workflow
                             CorrelationId = saga.CorrelationId,
                             Word = saga.Word
                         });
-
-                        await ctx.Publish(new GameStarted
-                        {
-                            CorrelationId = saga.CorrelationId,
-                            WordLength = saga.Word.Length,
-                            TotalTurns = saga.TurnsLeft
-                        });
                     });
+
+        private EventActivityBinder<GameSagaInstance, ProcessingSetup> HandleProcessingSetup() =>
+            When(ProcessingSetupReceived)
+            .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Processing setup received")))
+            .ThenAsync(async ctx =>
+            {
+                var saga = ctx.Instance;
+
+                await ctx.Publish(new GameStatus
+                {
+                    CorrelationId = saga.CorrelationId,
+                    Guesses = new List<char> { },
+                    GuessedWord = ctx.Data.GuessedWord,
+                    TurnsLeft = saga.TurnsLeft
+                });
+            });
 
         private EventActivityBinder<GameSagaInstance, MakeTurn> HandleMakeTurn() =>
             When(MakeTurnReceived)
@@ -161,7 +186,8 @@ namespace Hangman.Workflow
                         var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.Processor));
                         await ep.Send(new ProcessTurn
                         {
-                            CorrelationId = saga.CorrelationId
+                            CorrelationId = saga.CorrelationId,
+                            Guess = ctx.Data.Guess
                         });
                     })
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "ProcessTurn sent")));
@@ -179,9 +205,12 @@ namespace Hangman.Workflow
                         saga.TurnsLeft--;
                     }
 
-                    await ctx.Publish(new TurnInfo
+                    await ctx.Publish(new GameStatus
                     {
-                        CorrelationId = saga.CorrelationId
+                        CorrelationId = saga.CorrelationId,
+                        GuessedWord = msg.GuessedWord,
+                        Guesses = msg.Guesses,
+                        TurnsLeft = saga.TurnsLeft                        
                     });
 
                     if (ctx.Data.HasWon)

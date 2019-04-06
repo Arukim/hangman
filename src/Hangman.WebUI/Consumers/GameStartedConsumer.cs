@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hangman.WebUI.Consumers
 {
-    public class GameStartedConsumer : IConsumer<GameStarted>
+    public class GameStartedConsumer : IConsumer<GameStatus>
     {
         private readonly IHubContext<SignalRCounter> hub;
         public GameStartedConsumer(IHubContext<SignalRCounter> hub)
@@ -15,7 +15,7 @@ namespace Hangman.WebUI.Consumers
         }
 
 
-        public Task Consume(ConsumeContext<GameStarted> ctx)
+        public Task Consume(ConsumeContext<GameStatus> ctx)
         {
             return hub.Clients.All.SendAsync("GameStarted", ctx.Message);
         }

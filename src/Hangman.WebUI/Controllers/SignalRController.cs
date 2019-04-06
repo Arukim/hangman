@@ -1,13 +1,28 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Hangman.Messaging;
+using Hangman.Messaging.GameSaga;
+using MassTransit;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hangman.WebUI.Controllers
 {
     public class SignalRCounter : Hub
     {
+        private readonly IBusControl busControl;
+        private readonly RabbitMQConfiguration rmqConfig;
+
+        public SignalRCounter(
+            IBusControl busControl,
+            IOptions<RabbitMQConfiguration> rmqOptions)
+        {
+            this.busControl = busControl;
+            rmqConfig = rmqOptions.Value;
+        }
+
+
         public Task IncrementCounter()
         {
 
@@ -21,6 +36,13 @@ namespace Hangman.WebUI.Controllers
             List<String> ConnectionIDToIgnore = new List<String>();
             ConnectionIDToIgnore.Add(Context.ConnectionId);
             return Clients.AllExcept(ConnectionIDToIgnore).SendAsync("DecrementCounter");
+        }
+
+        public async Task Guess(Guid id, string guess)
+        {
+            var ep = await busControl.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.GameSaga));
+
+            await ep.Send(new MakeTurn { CorrelationId = id, Guess = guess.ToLowerInvariant()[0] });
         }
     }
 }

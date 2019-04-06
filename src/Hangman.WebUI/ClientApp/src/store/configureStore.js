@@ -55,6 +55,9 @@ export function signalRInvokeMiddleware(store) {
             case "SIGNALR_DECREMENT_COUNT":
                 connection.invoke('DecrementCounter');
                 break;
+            case Game.signalRGuess:
+                connection.invoke('Guess', action.id, action.guess);
+                break;
         }
 
         return next(action);

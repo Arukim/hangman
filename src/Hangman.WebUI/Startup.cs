@@ -56,7 +56,7 @@ namespace Hangman.WebUI
                     cfg.ConfigureEndpoints(provider);
                 }));
 
-                x.AddRequestClient<GameStarted>();
+                x.AddRequestClient<GameStatus>();
 
             });
 

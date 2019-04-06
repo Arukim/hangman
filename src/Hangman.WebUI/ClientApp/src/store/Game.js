@@ -1,8 +1,10 @@
 ﻿const requestGameInfo = 'REQUEST_GAME_INFO';
 const responseGameInfo = 'RESPONSE_GAME_INFO';
+const madeTurn = "MADE_TURN";
 
 
 export const signalRGameStarted = 'GAME_STARTED';
+export const signalRGuess = 'GAME_GUESS';
 
 
 export const Status = {
@@ -25,6 +27,11 @@ export const actionCreators = {
         const gameInfo = await response.json();
 
         dispatch({ type: responseGameInfo, id, gameInfo });
+    },
+    onGuessClick: (id, guess) => async (dispatch, getState) => {
+        dispatch({ type: signalRGuess, id, guess });
+
+        dispatch({ type: madeTurn });
     }
 }
 
@@ -42,20 +49,30 @@ export const reducer = (state, action) => {
     }
 
     if (action.type === responseGameInfo) {
+
         return {
             ...state,
             id: action.id,
             gameInfo: action.gameInfo,
-            status: Status.Init
+            status: state.status === Status.Loading ? Status.Init : state.status
         };
     }
 
     if (action.type === signalRGameStarted) {
         return {
             ...state,
+            ...action,
             status: Status.InProgress
         };
     }
+
+    if (action.type === madeTurn) {
+        return {
+            ...state,
+            totalTurns: state.turnsLeft - 1
+        };
+    }
+
 
     return state;
 }
