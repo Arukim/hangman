@@ -11,5 +11,6 @@ namespace Hangman.Messaging.GameSaga
         public string GuessedWord { get; set; }
         public List<char> Guesses { get; set; }
         public bool HasWon { get; set; }
+        public bool HasGuessed { get; set; }
     }
 }

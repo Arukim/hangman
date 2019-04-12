@@ -59,11 +59,13 @@ namespace Hangman.Processor.Consumers
 
                 turnRegister.WordLeft = turnRegister.WordLeft.Replace(msg.Guess.ToString(), "");
 
+                bool hasGuessed = false;
                 for (int i = 0; i < turnRegister.Word.Length; i++)
                 {
                     if (turnRegister.Word[i] == msg.Guess)
                     {
                         game.GuessedWord[i] = msg.Guess;
+                        hasGuessed = true;
                     }
                 }
 
@@ -80,7 +82,8 @@ namespace Hangman.Processor.Consumers
                     Accepted = true,
                     GuessedWord = string.Join("", game.GuessedWord),
                     Guesses = turnRegister.Guesses,
-                    HasWon = string.IsNullOrEmpty(turnRegister.WordLeft)
+                    HasWon = string.IsNullOrEmpty(turnRegister.WordLeft),
+                    HasGuessed = hasGuessed
                 });
             }
         }

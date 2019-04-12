@@ -8,7 +8,7 @@ class Game extends Component {
 
     constructor() {
         super();
-        this.state = { guess: ''};
+        this.state = { guess: '' };
     }
 
     componentDidMount() {
@@ -23,7 +23,8 @@ class Game extends Component {
         this.setState({ guess: e.target.value });
     }
 
-    onGuessClick = (e) => {
+    onSubmitTurn = (e) => {
+        e.preventDefault();
         let guess = this.state.guess;
         if (guess.length > 0 && this.props.turnsLeft > 0) {
             this.setState({ guess: "" },
@@ -47,9 +48,13 @@ class Game extends Component {
             default:
                 break;
         }
+
+        let img = this.props.hasWon ? "won" : this.props.turnsLeft;
+
         return (
             <div>
                 <h1>Game {this.props.id}</h1>
+                <img src={`/img/hangman/${img}.png`} alt="game state" style={{ border: '2px solid black' }} />
                 {game}
             </div>
         );
@@ -61,15 +66,18 @@ class Game extends Component {
                 <h2> Game is in progress </h2>
                 <h3> You have {this.props.turnsLeft} turns left </h3>
                 <h3> {this.props.guessedWord} </h3>
-                <input
-                    type="text"
-                    onChange={this.onGuessStateChange}
-                    value={this.state.guess}
-                ></input>
-                <button onClick={this.onGuessClick}> Guess </button>
+                <form onSubmit={this.onSubmitTurn}>
+                    <input
+                        type="text"
+                        onChange={this.onGuessStateChange}
+                        value={this.state.guess}
+                        ref={input => input && input.focus()}
+                    ></input>
+                    <button> Guess </button>
+                </form>
                 <ul>
-                    {this.props.guesses.map(x => 
-                        <li>{x}</li>
+                    {this.props.guesses.map((x, i) =>
+                        <li key={i}>{x}</li>
                     )}
                 </ul>
             </div>

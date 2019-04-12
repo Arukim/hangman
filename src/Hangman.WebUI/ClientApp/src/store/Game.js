@@ -11,11 +11,13 @@ export const Status = {
     Loading: 'LOADING',
     NotFound: 'NOT_FOUND',
     Init: 'INIT',
-    InProgress: 'IN_PROGRESS'
+    InProgress: 'IN_PROGRESS',
+    Won: 'WON'
 };
 
 const initialState = {
-    status: Status.Loading
+    status: Status.Loading,
+    turnsLeft: 7
 };
 
 export const actionCreators = {
@@ -49,7 +51,6 @@ export const reducer = (state, action) => {
     }
 
     if (action.type === responseGameInfo) {
-
         return {
             ...state,
             id: action.id,
