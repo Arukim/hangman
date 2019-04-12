@@ -75,11 +75,11 @@ class Game extends Component {
                     ></input>
                     <button> Guess </button>
                 </form>
-                <ul>
+                <div>
                     {this.props.guesses.map((x, i) =>
-                        <li key={i}>{x}</li>
+                       <span key={i}>{x},</span>
                     )}
-                </ul>
+                </div>
             </div>
         );
     }

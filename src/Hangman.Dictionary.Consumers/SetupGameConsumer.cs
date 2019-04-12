@@ -1,4 +1,5 @@
-﻿using Hangman.Messaging;
+﻿using Hangman.Dictionary.Consumers;
+using Hangman.Messaging;
 using Hangman.Messaging.GameSaga;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -11,12 +12,15 @@ namespace Hangman.Dictionary
     {
         private readonly ILogger logger;
         private readonly RabbitMQConfiguration rmqConfig;
+        private readonly WordGenerator wordGenerator;
 
         public SetupGameConsumer(ILogger<SetupGameConsumer> logger,
-            IOptions<RabbitMQConfiguration> rmqOption)
+            IOptions<RabbitMQConfiguration> rmqOption,
+            WordGenerator wordGenerator)
         {
             rmqConfig = rmqOption.Value;
             this.logger = logger;
+            this.wordGenerator = wordGenerator;
         }
 
         public async Task Consume(ConsumeContext<SetupGame> ctx)
@@ -28,9 +32,9 @@ namespace Hangman.Dictionary
 
                 var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.GameSaga));
 
-                var word = "Mandragora";
+                var word = wordGenerator.Get();
 
-                logger.LogTrace($"Selected word {word}");
+                logger.LogInformation($"Selected word {word}");
 
                 await ep.Send(new WordSelected
                 {
@@ -38,7 +42,7 @@ namespace Hangman.Dictionary
                     Word = word
                 });
 
-                logger.LogInformation("Consumed");
+                logger.LogTrace("Consumed");
             }
         }
     }

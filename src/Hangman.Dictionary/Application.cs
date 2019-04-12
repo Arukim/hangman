@@ -1,4 +1,5 @@
 ﻿using Hangman.Core;
+using Hangman.Dictionary.Consumers;
 using Hangman.Messaging;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ namespace Hangman.Dictionary
             services
                 .AddScoped<SetupGameConsumer>()
                 .AddSingleton<DictionaryService>()
+                .AddSingleton<WordGenerator>()
                 .AddMessaging(configuration)
                 .AddMassTransit();
         }
