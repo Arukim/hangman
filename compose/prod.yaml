@@ -1,0 +1,34 @@
+# Use this compose file to run production environment
+version: '3.6' # defines file features
+services:
+# message bus and database
+  rmq:
+    image: "rabbitmq:3-management"    
+    env_file:
+      - 'prod.rabbitmq.env'
+  mongo:
+    image: mongo:4.0.5
+    restart: always
+# services
+  web:
+    image: arukim/hangman-web:v1
+    restart: always
+    volumes: 
+      - ./prod.json:/etc/config/appsettings.json:ro
+    ports:
+      - "8000:80"
+  orhestrator:
+    image: arukim/hangman-orchestrator:v1
+    restart: always
+    volumes: 
+      - ./prod.json:/etc/config/appsettings.json:ro
+  dictionary:
+    image: arukim/hangman-dictionary:v1
+    restart: always
+    volumes: 
+      - ./prod.json:/etc/config/appsettings.json:ro
+  processor:
+    image: arukim/hangman-processor:v1
+    restart: always
+    volumes: 
+      - ./prod.json:/etc/config/appsettings.json:ro

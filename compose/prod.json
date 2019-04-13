@@ -1,0 +1,12 @@
+{
+  "rabbit": {
+    "username": "rabbitmq",
+    "password": "rabbitmq",
+    "endpoint": "rabbitmq://rmq:5672",
+    "root": "prod"
+  },
+  "mongo": {
+    "endpoint": "mongodb://mongo:27017",
+    "database": "hangman"
+  }
+}
