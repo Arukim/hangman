@@ -4,24 +4,30 @@ import { bindActionCreators } from 'redux';
 import { actionCreators } from '../store/Home';
 
 const Home = props => (
-  <div>
-        <h1>Hello, world!</h1>
+    <div>
+        <h1>Welcome to the Game</h1>
 
+        <br />
+        <h2> This is a demo instance of Hangman game, built with:</h2>
+
+        <ul>
+            <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
+            <li><a href='https://www.rabbitmq.com/'>RabbitMQ</a> as a general purpose event queue with AMQP support </li>
+            <li><a href='https://masstransit-project.com/'>MassTransit</a> as a messaging library and <a href='http://masstransit-project.com/MassTransit/advanced/sagas/'> MassTransit Saga </a> as a saga provider </li>
+            <li><a href='https://www.mongodb.com/'> MongoDB </a> for data persistence </li>
+            <li><a href='https://facebook.github.io/react/'>React</a> and <a href='https://redux.js.org/'>Redux</a> for client-side code</li>
+            <li><a href='http://getbootstrap.com/'>Bootstrap</a> for layout and styling</li>
+            <li><a href='https://www.docker.com/'> Docker </a> as a containerization engine </li>
+        </ul>
+
+        <h2>To get started, you can:</h2>
+        <ul>
+            <li><strong>Navigate to sources</strong>. Please, browse sources at <a href='https://github.com/Arukim/hangman'>github</a>.</li>
+            <li><strong>Test the application</strong>. Press <strong> create game </strong> button to start a game.</li>
+        </ul>
+        <br/>
         <button className="btn btn-primary" onClick={props.createGame}>Create Game</button>
-    <p>Welcome to your new single-page application, built with:</p>
-    <ul>
-      <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
-      <li><a href='https://facebook.github.io/react/'>React</a> and <a href='https://redux.js.org/'>Redux</a> for client-side code</li>
-      <li><a href='http://getbootstrap.com/'>Bootstrap</a> for layout and styling</li>
-    </ul>
-    <p>To help you get started, we've also set up:</p>
-    <ul>
-      <li><strong>Client-side navigation</strong>. For example, click <em>Counter</em> then <em>Back</em> to return here.</li>
-      <li><strong>Development server integration</strong>. In development mode, the development server from <code>create-react-app</code> runs in the background automatically, so your client-side resources are dynamically built on demand and the page refreshes when you modify any file.</li>
-      <li><strong>Efficient production builds</strong>. In production mode, development-time features are disabled, and your <code>dotnet publish</code> configuration produces minified, efficiently bundled JavaScript files.</li>
-    </ul>
-    <p>The <code>ClientApp</code> subdirectory is a standard React application based on the <code>create-react-app</code> template. If you open a command prompt in that directory, you can run <code>npm</code> commands such as <code>npm test</code> or <code>npm install</code>.</p>
-  </div>
+    </div>
 );
 
 export default connect(

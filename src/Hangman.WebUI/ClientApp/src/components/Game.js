@@ -53,7 +53,6 @@ class Game extends Component {
 
         return (
             <div>
-                <h1>Game {this.props.id}</h1>
                 <img src={`/img/hangman/${img}.png`} alt="game state" style={{ border: '2px solid black' }} />
                 {game}
             </div>
@@ -63,7 +62,7 @@ class Game extends Component {
     renderGameInProgress() {
         return (
             <div>
-                <h2> Game is in progress </h2>
+                <h2> Game {this.props.id} is in progress </h2>
                 <h3> You have {this.props.turnsLeft} turns left </h3>
                 <h3> {this.props.guessedWord} </h3>
                 <form onSubmit={this.onSubmitTurn}>

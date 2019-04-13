@@ -51,6 +51,10 @@ export const reducer = (state, action) => {
     }
 
     if (action.type === responseGameInfo) {
+        if (action.gameInfo.hasWon) {
+            state.status = Status.Won;
+        }
+
         return {
             ...state,
             id: action.id,
