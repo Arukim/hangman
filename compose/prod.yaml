@@ -16,7 +16,7 @@ services:
     volumes: 
       - ./prod.json:/etc/config/appsettings.json:ro
     ports:
-      - "8000:80"
+      - "80:80"
   orhestrator:
     image: arukim/hangman-orchestrator:v1
     restart: always
