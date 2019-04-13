@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using Hangman.Core;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using System;
 
 namespace Hangman.WebUI
 {
@@ -17,8 +13,25 @@ namespace Hangman.WebUI
             CreateWebHostBuilder(args).Build().Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+        static IConfigurationRoot ConfigConfiguration(string[] args)
+        {
+            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLowerInvariant();
+            return new ConfigurationBuilder()
+             .AddJsonFile("appsettings.json", optional: true)
+             .AddJsonFile($"appsettings.{environmentName}.json", optional: true)
+             .AddJsonFile(Constants.LinuxConfigPath, optional: true, reloadOnChange: true)
+             .AddEnvironmentVariables()
+             .AddUserSecrets<Program>()
+             .AddCommandLine(args)
+             .Build();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        {
+            var config = ConfigConfiguration(args);
+            return WebHost.CreateDefaultBuilder(args)
+                .UseConfiguration(config)
                 .UseStartup<Startup>();
+        }
     }
 }
