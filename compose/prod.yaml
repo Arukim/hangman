@@ -11,24 +11,24 @@ services:
     restart: always
 # services
   web:
-    image: arukim/hangman-web:v1
+    image: arukim/hangman-web:${APP_VERSION}
     restart: always
     volumes: 
       - ./prod.json:/etc/config/appsettings.json:ro
     ports:
       - "80:80"
   orhestrator:
-    image: arukim/hangman-orchestrator:v1
+    image: arukim/hangman-orchestrator:${APP_VERSION}
     restart: always
     volumes: 
       - ./prod.json:/etc/config/appsettings.json:ro
   dictionary:
-    image: arukim/hangman-dictionary:v1
+    image: arukim/hangman-dictionary:${APP_VERSION}
     restart: always
     volumes: 
       - ./prod.json:/etc/config/appsettings.json:ro
   processor:
-    image: arukim/hangman-processor:v1
+    image: arukim/hangman-processor:${APP_VERSION}
     restart: always
     volumes: 
       - ./prod.json:/etc/config/appsettings.json:ro
