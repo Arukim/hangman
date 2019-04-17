@@ -26,7 +26,7 @@ const Home = props => (
             <li><strong>Test the application</strong>. Press <strong> create game </strong> button to start a game.</li>
         </ul>
         <br/>
-        <button className="btn btn-primary" onClick={props.createGame}>Create Game</button>
+        <button className="btn btn-primary" onClick={props.createGame}>Start Game</button>
     </div>
 );
 

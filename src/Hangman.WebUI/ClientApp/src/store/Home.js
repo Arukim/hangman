@@ -12,7 +12,7 @@ export const actionCreators = {
 
         const response = await fetch(url, { method: "POST" });
         const data = await response.json();
-
+        
         dispatch(push(`game/${data.id}`));
     }
 };

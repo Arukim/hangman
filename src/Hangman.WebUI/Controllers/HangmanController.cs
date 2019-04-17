@@ -36,6 +36,7 @@ namespace Hangman.WebUI.Controllers
             var id = Guid.NewGuid();
             var gameSaga = new GameSaga
             {
+                TurnsLeft = -1,
                 CorrelationId = id,
                 GuessedWord = new char[] { },
                 Guesses = new List<char> { }

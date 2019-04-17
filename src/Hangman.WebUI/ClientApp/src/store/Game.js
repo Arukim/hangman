@@ -1,12 +1,15 @@
 ﻿const requestGameInfo = 'REQUEST_GAME_INFO';
 const madeTurn = "MADE_TURN";
-
+const reset = "GAME_RESET";
 
 export const gameState = 'QUERY_STATE';
 export const signalRGuess = 'COMMAND_GUESS';
 export const signalRSubscribe = 'COMMAND_SUBSCRIBE';
+export const signalRUnsubscribe = 'COMMAND_UNSUBSCRIBE';
 
 const initialState = {
+    isLoading: true,
+    turnsLeft: -1
 };
 
 export const actionCreators = {
@@ -24,6 +27,10 @@ export const actionCreators = {
         dispatch({ type: signalRGuess, id, guess });
 
         dispatch({ type: madeTurn });
+    },
+    exit: (id) => async (dispatch, getState) => {
+        dispatch({ type: reset });
+        dispatch({ type: signalRUnsubscribe, id: id });
     }
 }
 
@@ -54,6 +61,9 @@ export const reducer = (state, action) => {
         };
     }
 
+    if (action.type === reset) {
+        return initialState;
+    }
 
     return state;
 }

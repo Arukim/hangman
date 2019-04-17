@@ -116,7 +116,7 @@ namespace Hangman.Workflow
             // during processingTurn (add retry policy or reschedule a message)
             During(ProcessingTurn,
                 HandleTurnProcessed()
-                    .TransitionTo(WaitingForTurn), 
+                    .TransitionTo(WaitingForTurn),
                 HandleWonGame()
                     .Finalize(),
                 HandleLostGame()
@@ -199,7 +199,7 @@ namespace Hangman.Workflow
                     var msg = ctx.Data;
                     var saga = ctx.Instance;
 
-                    if (msg.Accepted && ! msg.HasGuessed)
+                    if (msg.Accepted && !msg.HasGuessed)
                     {
                         saga.TurnsLeft--;
                     }
@@ -234,6 +234,20 @@ namespace Hangman.Workflow
 
         private EventActivityBinder<GameSaga> HandleLostGame() =>
             When(LostGame)
+                 .ThenAsync(async ctx =>
+                 {
+                     var saga = ctx.Instance;
+                     await ctx.Publish(new GameStatus
+                     {
+                         Id = saga.Id.ToString(),
+                         Status = saga.CurrentState,
+                         CorrelationId = saga.CorrelationId,
+                         GuessedWord = saga.Word,
+                         Guesses = saga.Guesses,
+                         TurnsLeft = saga.TurnsLeft,
+                         HasWon = false
+                     });
+                 })
                  .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Lost game")));
 
         #endregion

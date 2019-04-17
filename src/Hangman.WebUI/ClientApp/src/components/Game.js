@@ -15,6 +15,11 @@ class Game extends Component {
         this.init();
     }
 
+    componentWillUnmount() {
+        console.log("unmount");
+        this.props.exit(this.props.correlationId);
+    }
+
     init() {
         this.props.requestGameInfo(this.props.match.params.id);
     }
@@ -54,24 +59,30 @@ class Game extends Component {
     renderGameInProgress() {
         return (
             <div>
-                <h2> Game {this.props.id} is in progress </h2>
-                <h3> You have {this.props.turnsLeft} turns left </h3>
-                <h3> {this.props.guessedWord} </h3>
-                <form onSubmit={this.onSubmitTurn}>
-                    <input
-                        type="text"
-                        onChange={this.onGuessStateChange}
-                        value={this.state.guess}
-                        ref={input => input && input.focus()}
-                    ></input>
-                    <button> Guess </button>
-                </form>
+                {
+                    this.props.turnsLeft >= 0 ?
+                        <div>
+                            <h3> You have {this.props.turnsLeft} turns left </h3>
+
+                            <h3> {this.props.guessedWord} </h3>
+                            <form onSubmit={this.onSubmitTurn}>
+                                <input
+                                    type="text"
+                                    onChange={this.onGuessStateChange}
+                                    value={this.state.guess}
+                                    ref={input => input && input.focus()}
+                                ></input>
+                                <button> Guess </button>
+                            </form>
+                        </div>
+                        : null
+                }
                 <div>
                     {
                         this.props.guesses ?
-                        this.props.guesses.map((x, i) =>
-                            <span key={i}>{x},</span>
-                        ) : null
+                            this.props.guesses.map((x, i) =>
+                                <span key={i}>{x},</span>
+                            ) : null
                     }
                 </div>
             </div>

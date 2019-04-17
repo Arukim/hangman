@@ -51,6 +51,9 @@ export function signalRInvokeMiddleware(store) {
             case Game.signalRSubscribe:
                 connection.invoke('Subscribe', action.id);
                 break;
+            case Game.signalRUnsubscribe:
+                connection.invoke('Unsubscribe', action.id);
+                break;
             default:
                 break;
         }
