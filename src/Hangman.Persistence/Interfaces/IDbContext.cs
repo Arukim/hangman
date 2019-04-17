@@ -1,7 +1,5 @@
-﻿using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Hangman.Persistence.Entities;
+using MongoDB.Driver;
 using System.Threading.Tasks;
 
 namespace Hangman.Persistence.Interfaces
@@ -11,5 +9,7 @@ namespace Hangman.Persistence.Interfaces
         MongoClient Client { get; }
         IMongoDatabase Database { get; }
         Task InitAsync();
+
+        IMongoCollection<GameSaga> GameSagas { get; }
     }
 }

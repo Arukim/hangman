@@ -1,23 +1,12 @@
 ﻿const requestGameInfo = 'REQUEST_GAME_INFO';
-const responseGameInfo = 'RESPONSE_GAME_INFO';
 const madeTurn = "MADE_TURN";
 
 
-export const signalRGameStarted = 'GAME_STARTED';
-export const signalRGuess = 'GAME_GUESS';
-
-
-export const Status = {
-    Loading: 'LOADING',
-    NotFound: 'NOT_FOUND',
-    Init: 'INIT',
-    InProgress: 'IN_PROGRESS',
-    Won: 'WON'
-};
+export const gameState = 'QUERY_STATE';
+export const signalRGuess = 'COMMAND_GUESS';
+export const signalRSubscribe = 'COMMAND_SUBSCRIBE';
 
 const initialState = {
-    status: Status.Loading,
-    turnsLeft: 7
 };
 
 export const actionCreators = {
@@ -28,7 +17,8 @@ export const actionCreators = {
         const response = await fetch(url);
         const gameInfo = await response.json();
 
-        dispatch({ type: responseGameInfo, id, gameInfo });
+        dispatch({ type: gameState, ...gameInfo });
+        dispatch({ type: signalRSubscribe, id: gameInfo.correlationId });
     },
     onGuessClick: (id, guess) => async (dispatch, getState) => {
         dispatch({ type: signalRGuess, id, guess });
@@ -46,35 +36,21 @@ export const reducer = (state, action) => {
         return {
             ...state,
             id: action.id,
-            status: Status.Loading
+            isLoading: true
         };
     }
 
-    if (action.type === responseGameInfo) {
-        if (action.gameInfo.hasWon) {
-            state.status = Status.Won;
-        }
-
-        return {
-            ...state,
-            id: action.id,
-            gameInfo: action.gameInfo,
-            status: state.status === Status.Loading ? Status.Init : state.status
-        };
-    }
-
-    if (action.type === signalRGameStarted) {
+    if (action.type === gameState) {
         return {
             ...state,
             ...action,
-            status: Status.InProgress
+            isLoading: false
         };
     }
 
     if (action.type === madeTurn) {
         return {
-            ...state,
-            totalTurns: state.turnsLeft - 1
+            ...state
         };
     }
 

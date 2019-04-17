@@ -22,27 +22,21 @@ namespace Hangman.WebUI.Controllers
             rmqConfig = rmqOptions.Value;
         }
 
-
-        public Task IncrementCounter()
-        {
-
-            List<String> ConnectionIDToIgnore = new List<String>();
-            ConnectionIDToIgnore.Add(Context.ConnectionId);
-            return Clients.AllExcept(ConnectionIDToIgnore).SendAsync("IncrementCounter");
-        }
-
-        public Task DecrementCounter()
-        {
-            List<String> ConnectionIDToIgnore = new List<String>();
-            ConnectionIDToIgnore.Add(Context.ConnectionId);
-            return Clients.AllExcept(ConnectionIDToIgnore).SendAsync("DecrementCounter");
-        }
-
         public async Task Guess(Guid id, string guess)
         {
             var ep = await busControl.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.GameSaga));
 
             await ep.Send(new MakeTurn { CorrelationId = id, Guess = guess.ToLowerInvariant()[0] });
+        }
+
+        public async Task Subscribe(Guid id)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, id.ToString());
+        }
+
+        public async Task Unsubscribe(Guid id)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, id.ToString());
         }
     }
 }

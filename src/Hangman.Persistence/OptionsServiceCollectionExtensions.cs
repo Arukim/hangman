@@ -22,15 +22,10 @@ namespace Hangman.Persistence
             var mongoDbConfig = new MongoDBConfiguration();
             mongoSection.Bind(mongoDbConfig);
 
-            var mainDbContext = new MainDbContext(Options.Create(mongoDbConfig));
-            mainDbContext.InitAsync().GetAwaiter().GetResult();
+            var ctx = new DbContext(Options.Create(mongoDbConfig));
+            ctx.InitAsync().GetAwaiter().GetResult();
 
-            services.AddSingleton<IMainDbContext>(mainDbContext);
-
-            var processorDb = new ProcessorDbContext(Options.Create(mongoDbConfig));
-            processorDb.InitAsync().GetAwaiter().GetResult();
-
-            services.AddSingleton<IProcessorDbContext>(processorDb);
+            services.AddSingleton<IDbContext>(ctx);
 
             return services;
         }

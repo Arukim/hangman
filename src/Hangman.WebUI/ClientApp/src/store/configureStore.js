@@ -2,15 +2,11 @@ import { applyMiddleware, combineReducers, compose, createStore } from 'redux';
 import * as SignalR from '@aspnet/signalr';
 import thunk from 'redux-thunk';
 import { routerReducer, routerMiddleware } from 'react-router-redux';
-import * as Counter from './Counter';
-import * as WeatherForecasts from './WeatherForecasts';
 import * as Home from './Home';
 import * as Game from './Game';
 
 export function configureStore(history, initialState) {
     const reducers = {
-        counter: Counter.reducer,
-        weatherForecasts: WeatherForecasts.reducer,
         home: Home.reducer,
         game: Game.reducer
     };
@@ -42,21 +38,20 @@ export function configureStore(history, initialState) {
 
 
 const connection = new SignalR.HubConnectionBuilder()
-    .withUrl("/SignalRCounter")
+    .withUrl("/SignalR")
     .configureLogging(SignalR.LogLevel.Information)
     .build();
 
 export function signalRInvokeMiddleware(store) {
     return (next) => async (action) => {
         switch (action.type) {
-            case "SIGNALR_INCREMENT_COUNT":
-                connection.invoke('IncrementCounter');
-                break;
-            case "SIGNALR_DECREMENT_COUNT":
-                connection.invoke('DecrementCounter');
-                break;
             case Game.signalRGuess:
                 connection.invoke('Guess', action.id, action.guess);
+                break;
+            case Game.signalRSubscribe:
+                connection.invoke('Subscribe', action.id);
+                break;
+            default:
                 break;
         }
 
@@ -65,19 +60,9 @@ export function signalRInvokeMiddleware(store) {
 }
 
 export function signalRRegisterCommands(store, callback) {
-
-    connection.on('IncrementCounter', data => {
-        store.dispatch({ type: 'INCREMENT_COUNT' });
-        console.log("Count has been incremented");
-    });
-
-    connection.on('DecrementCounter', data => {
-        store.dispatch({ type: 'DECREMENT_COUNT' });
-        console.log("Count has been decremented");
-    });
     
-    connection.on('GameStarted', data => {
-        store.dispatch({ ...data, type: Game.signalRGameStarted });
+    connection.on('GameState', data => {
+        store.dispatch({ ...data, type: Game.gameState });
     });
 
     connection.start().then(callback());

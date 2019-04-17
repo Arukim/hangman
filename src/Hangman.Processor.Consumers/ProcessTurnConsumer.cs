@@ -13,17 +13,14 @@ namespace Hangman.Processor.Consumers
     {
         private readonly ILogger logger;
         private readonly RabbitMQConfiguration rmqConfig;
-        private readonly IProcessorDbContext processorCtx;
-        private readonly IMainDbContext mainCtx;
+        private readonly IDbContext dbContext;
 
         public ProcessTurnConsumer(ILogger<ProcessTurnConsumer> logger,
             IOptions<RabbitMQConfiguration> rmqOption,
-            IProcessorDbContext processorCtx,
-            IMainDbContext mainCtx)
+            IDbContext dbContext)
         {
             rmqConfig = rmqOption.Value;
-            this.processorCtx = processorCtx;
-            this.mainCtx = mainCtx;
+            this.dbContext = dbContext;
             this.logger = logger;
         }
 
@@ -32,57 +29,52 @@ namespace Hangman.Processor.Consumers
             var msg = ctx.Message;
             var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.GameSaga));
 
-            await processorCtx.InitAsync();
+            await dbContext.InitAsync();
 
             using (var scope = logger.BeginScope($"CorrelationId={msg.CorrelationId}"))
             {
-                var turnRegister = await processorCtx.TurnRegisters
+                var gameSaga = await dbContext.GameSagas
                     .Find(x => x.CorrelationId == msg.CorrelationId)
                     .FirstAsync();
 
-                var game = await mainCtx.Games.Find(x => x.CorrelationId == msg.CorrelationId)
-                    .FirstAsync();
-
-                if (turnRegister.Guesses.Contains(msg.Guess))
+                if (gameSaga.Guesses.Contains(msg.Guess))
                 {
                     await ep.Send(new TurnProcessed
                     {
                         CorrelationId = msg.CorrelationId,
                         Accepted = false,
-                        GuessedWord = string.Join("", game.GuessedWord),
-                        Guesses = turnRegister.Guesses,
+                        GuessedWord = string.Join("", gameSaga.GuessedWord),
+                        Guesses = gameSaga.Guesses,
                         HasWon = false
                     });
 
                     return;
                 }
 
-                turnRegister.WordLeft = turnRegister.WordLeft.Replace(msg.Guess.ToString(), "");
+                gameSaga.WordLeft = gameSaga.WordLeft.Replace(msg.Guess.ToString(), "");
 
                 bool hasGuessed = false;
-                for (int i = 0; i < turnRegister.Word.Length; i++)
+                for (int i = 0; i < gameSaga.Word.Length; i++)
                 {
-                    if (turnRegister.Word[i] == msg.Guess)
+                    if (gameSaga.Word[i] == msg.Guess)
                     {
-                        game.GuessedWord[i] = msg.Guess;
+                        gameSaga.GuessedWord[i] = msg.Guess;
                         hasGuessed = true;
                     }
                 }
 
-                turnRegister.Guesses.Add(msg.Guess);
+                gameSaga.Guesses.Add(msg.Guess);
 
-                await processorCtx.TurnRegisters
-                    .ReplaceOneAsync(x => x.CorrelationId == turnRegister.CorrelationId, turnRegister);
-
-                await mainCtx.Games.ReplaceOneAsync(x => x.CorrelationId == game.CorrelationId, game);
+                await dbContext.GameSagas
+                    .ReplaceOneAsync(x => x.CorrelationId == gameSaga.CorrelationId, gameSaga);
 
                 await ep.Send(new TurnProcessed
                 {
                     CorrelationId = msg.CorrelationId,
                     Accepted = true,
-                    GuessedWord = string.Join("", game.GuessedWord),
-                    Guesses = turnRegister.Guesses,
-                    HasWon = string.IsNullOrEmpty(turnRegister.WordLeft),
+                    GuessedWord = string.Join("", gameSaga.GuessedWord),
+                    Guesses = gameSaga.Guesses,
+                    HasWon = string.IsNullOrEmpty(gameSaga.WordLeft),
                     HasGuessed = hasGuessed
                 });
             }

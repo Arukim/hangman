@@ -1,15 +1,16 @@
 ﻿using Automatonymous;
 using MassTransit.MongoDbIntegration.Saga;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
-namespace Hangman.Workflow
+namespace Hangman.Persistence.Entities
 {
-    public class GameSagaInstance : SagaStateMachineInstance, IVersionedSaga
+    public class GameSaga : SagaStateMachineInstance, IVersionedSaga
     {
+        [BsonId]
         public ObjectId Id { get; set; }
-        [Key]
         public Guid CorrelationId { get; set; }
 
         #region IVersionedSaga Implementation
@@ -19,5 +20,11 @@ namespace Hangman.Workflow
         public string CurrentState { get; set; }
         public string Word { get; set; }
         public int TurnsLeft { get; set; }
+
+        public char[] GuessedWord { get; set; }
+
+        public string WordLeft { get; set; }
+
+        public List<char> Guesses { get; set; }
     }
 }

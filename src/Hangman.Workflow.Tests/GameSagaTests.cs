@@ -1,5 +1,6 @@
 using Hangman.Messaging;
 using Hangman.Messaging.GameSaga;
+using Hangman.Persistence.Entities;
 using Hangman.Workflow;
 using MassTransit.Testing;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ namespace Tests
     public class GameSagaTests
     {
         protected Guid correlationId;
-        protected SagaTestHarness<GameSagaInstance> sagaTestHarness;
+        protected SagaTestHarness<GameSaga> sagaTestHarness;
         protected GameStateMachine stateMachine;
         protected InMemoryTestHarness harness;
 
@@ -31,7 +32,7 @@ namespace Tests
                 }));
 
             harness = new InMemoryTestHarness();
-            sagaTestHarness = harness.StateMachineSaga<GameSagaInstance, GameStateMachine>(stateMachine);
+            sagaTestHarness = harness.StateMachineSaga<GameSaga, GameStateMachine>(stateMachine);
             await harness.Start();
         }
 

@@ -98,7 +98,7 @@ namespace Hangman.WebUI
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<SignalRCounter>("/signalrcounter");
+                routes.MapHub<SignalRCounter>("/signalr");
             });
 
             app.UseSpa(spa =>

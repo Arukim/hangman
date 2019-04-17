@@ -1,7 +1,7 @@
 ﻿import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { actionCreators, Status } from '../store/Game';
+import { actionCreators } from '../store/Game';
 
 
 class Game extends Component {
@@ -35,18 +35,10 @@ class Game extends Component {
 
     render() {
         let game;
-        switch (this.props.status) {
-            case Status.Init:
-                game = renderGameInit(this.props);
-                break;
-            case Status.Loading:
-                game = renderGameLoading(this.props);
-                break;
-            case Status.InProgress:
-                game = this.renderGameInProgress();
-                break;
-            default:
-                break;
+        if (this.props.isLoading) {
+            game = this.renderGameLoading();
+        } else {
+            game = this.renderGameInProgress();
         }
 
         let img = this.props.hasWon ? "won" : this.props.turnsLeft;
@@ -75,25 +67,22 @@ class Game extends Component {
                     <button> Guess </button>
                 </form>
                 <div>
-                    {this.props.guesses.map((x, i) =>
-                       <span key={i}>{x},</span>
-                    )}
+                    {
+                        this.props.guesses ?
+                        this.props.guesses.map((x, i) =>
+                            <span key={i}>{x},</span>
+                        ) : null
+                    }
                 </div>
             </div>
         );
     }
-}
 
-function renderGameLoading(props) {
-    return (
-        <h2> Loading data </h2>
-    );
-}
-
-function renderGameInit(props) {
-    return (
-        <h2> Waiting for the game to start </h2>
-    );
+    renderGameLoading() {
+        return (
+            <h2> Loading data </h2>
+        );
+    }
 }
 
 export default connect(

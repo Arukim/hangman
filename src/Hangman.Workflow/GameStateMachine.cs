@@ -2,13 +2,14 @@
 using Automatonymous.Binders;
 using Hangman.Messaging;
 using Hangman.Messaging.GameSaga;
+using Hangman.Persistence.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 
 namespace Hangman.Workflow
 {
-    public class GameStateMachine : MassTransitStateMachine<GameSagaInstance>
+    public class GameStateMachine : MassTransitStateMachine<GameSaga>
     {
         protected readonly ILogger<GameStateMachine> logger;
         protected readonly RabbitMQConfiguration rmqConfig;
@@ -86,8 +87,7 @@ namespace Hangman.Workflow
 
             // Bind all events
 
-            // First event creates a new saga
-            Event(() => CreateSagaReceived, x => x.SelectId(m => m.Message.CorrelationId));
+            Event(() => CreateSagaReceived);
             Event(() => WordSelectedReceived);
             Event(() => ProcessingSetupReceived);
             Event(() => MakeTurnReceived);
@@ -125,7 +125,7 @@ namespace Hangman.Workflow
 
         #region Handlers 
 
-        private EventActivityBinder<GameSagaInstance, Create> HandleCreate() =>
+        private EventActivityBinder<GameSaga, Create> HandleCreate() =>
             When(CreateSagaReceived)
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Saga created")))
                     .ThenAsync(async ctx =>
@@ -140,25 +140,24 @@ namespace Hangman.Workflow
                     })
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Setup game sent")));
 
-        private EventActivityBinder<GameSagaInstance, WordSelected> HandleWordSelected() =>
+        private EventActivityBinder<GameSaga, WordSelected> HandleWordSelected() =>
             When(WordSelectedReceived)
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Word selected received")))
                     .ThenAsync(async ctx =>
                     {
                         var saga = ctx.Instance;
 
-                        saga.Word = ctx.Data.Word;
                         saga.TurnsLeft = 7;
 
                         var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.Processor));
                         await ep.Send(new SetupProcessing
                         {
                             CorrelationId = saga.CorrelationId,
-                            Word = saga.Word
+                            Word = ctx.Data.Word
                         });
                     });
 
-        private EventActivityBinder<GameSagaInstance, ProcessingSetup> HandleProcessingSetup() =>
+        private EventActivityBinder<GameSaga, ProcessingSetup> HandleProcessingSetup() =>
             When(ProcessingSetupReceived)
             .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Processing setup received")))
             .ThenAsync(async ctx =>
@@ -167,6 +166,8 @@ namespace Hangman.Workflow
 
                 await ctx.Publish(new GameStatus
                 {
+                    Id = saga.Id.ToString(),
+                    Status = saga.CurrentState,
                     CorrelationId = saga.CorrelationId,
                     Guesses = new List<char> { },
                     GuessedWord = ctx.Data.GuessedWord,
@@ -174,7 +175,7 @@ namespace Hangman.Workflow
                 });
             });
 
-        private EventActivityBinder<GameSagaInstance, MakeTurn> HandleMakeTurn() =>
+        private EventActivityBinder<GameSaga, MakeTurn> HandleMakeTurn() =>
             When(MakeTurnReceived)
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "MakeTurn received received")))
                     .ThenAsync(async ctx =>
@@ -190,7 +191,7 @@ namespace Hangman.Workflow
                     })
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "ProcessTurn sent")));
 
-        private EventActivityBinder<GameSagaInstance, TurnProcessed> HandleTurnProcessed() =>
+        private EventActivityBinder<GameSaga, TurnProcessed> HandleTurnProcessed() =>
             When(TurnProcessedRecevied)
                 .Then(ctx => logger.LogInformation(SagaMessage(ctx, "TurnProcessed received")))
                 .ThenAsync(async ctx =>
@@ -205,6 +206,8 @@ namespace Hangman.Workflow
 
                     await ctx.Publish(new GameStatus
                     {
+                        Id = saga.Id.ToString(),
+                        Status = saga.CurrentState,
                         CorrelationId = saga.CorrelationId,
                         GuessedWord = msg.GuessedWord,
                         Guesses = msg.Guesses,
@@ -224,12 +227,12 @@ namespace Hangman.Workflow
                     }
                 });
 
-        private EventActivityBinder<GameSagaInstance> HandleWonGame() =>
+        private EventActivityBinder<GameSaga> HandleWonGame() =>
             When(WonGame)
                  .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Won game")));
 
 
-        private EventActivityBinder<GameSagaInstance> HandleLostGame() =>
+        private EventActivityBinder<GameSaga> HandleLostGame() =>
             When(LostGame)
                  .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Lost game")));
 
@@ -237,7 +240,7 @@ namespace Hangman.Workflow
 
         #region Aux
 
-        protected string SagaMessage(InstanceContext<GameSagaInstance> ctx, string msg) => $"{ctx.Instance.CorrelationId} | {msg}";
+        protected string SagaMessage(InstanceContext<GameSaga> ctx, string msg) => $"{ctx.Instance.CorrelationId} | {msg}";
 
         #endregion
     }

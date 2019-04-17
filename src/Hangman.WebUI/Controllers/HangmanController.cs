@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Hangman.WebUI.Controllers
@@ -16,11 +17,11 @@ namespace Hangman.WebUI.Controllers
     [ApiController]
     public class HangmanController : Controller
     {
-        private readonly IMainDbContext dbContext;
+        private readonly IDbContext dbContext;
         private readonly IBusControl busControl;
         private readonly RabbitMQConfiguration rmqConfig;
 
-        public HangmanController(IMainDbContext dbContext,
+        public HangmanController(IDbContext dbContext,
             IBusControl busControl,
             IOptions<RabbitMQConfiguration> rmqOptions)
         {
@@ -33,37 +34,42 @@ namespace Hangman.WebUI.Controllers
         public async Task<NewGame> PostGame()
         {
             var id = Guid.NewGuid();
-            var game = new Game { CorrelationId = id };
-            await dbContext.Games.InsertOneAsync(game);
+            var gameSaga = new GameSaga
+            {
+                CorrelationId = id,
+                GuessedWord = new char[] { },
+                Guesses = new List<char> { }
+            };
+            await dbContext.GameSagas.InsertOneAsync(gameSaga);
 
             var ep = await busControl.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.GameSaga));
 
-            await ep.Send(new Create { CorrelationId = game.CorrelationId });
+            await ep.Send(new Create { CorrelationId = gameSaga.CorrelationId });
 
-            return new NewGame { Id = game.Id };
+            return new NewGame { Id = gameSaga.Id };
         }
 
         [HttpGet("game/{id}")]
-        public async Task<GameInfo> GetGame(string id)
+        public async Task<GameStatus> GetGame(string id)
         {
             var gameId = new ObjectId(id);
 
-            var game = await dbContext.Games
+            var game = await dbContext.GameSagas
                 .Find(x => x.Id == gameId)
                 .FirstAsync();
 
-            return new GameInfo
+            return new GameStatus
             {
-                Id = game.Id
+                Id = game.Id.ToString(),
+                Status = game.CurrentState,
+                GuessedWord = string.Join("", game.GuessedWord),
+                CorrelationId = game.CorrelationId,
+                Guesses = game.Guesses,
+                TurnsLeft = game.TurnsLeft
             };
         }
 
         public class NewGame
-        {
-            public ObjectId Id { get; set; }
-        }
-
-        public class GameInfo
         {
             public ObjectId Id { get; set; }
         }

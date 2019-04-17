@@ -17,7 +17,7 @@ namespace Hangman.WebUI.Consumers
 
         public Task Consume(ConsumeContext<GameStatus> ctx)
         {
-            return hub.Clients.All.SendAsync("GameStarted", ctx.Message);
+            return hub.Clients.Group(ctx.Message.CorrelationId.ToString()).SendAsync("GameState", ctx.Message);
         }
     }
 }
