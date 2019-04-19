@@ -23,6 +23,9 @@ namespace Hangman.Dictionary
             this.wordGenerator = wordGenerator;
         }
 
+        /// <summary>
+        /// Select a word for Hangman game
+        /// </summary>
         public async Task Consume(ConsumeContext<SelectWord> ctx)
         {
             var msg = ctx.Message;

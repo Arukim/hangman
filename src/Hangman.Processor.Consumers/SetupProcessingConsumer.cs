@@ -1,6 +1,5 @@
 ﻿using Hangman.Messaging;
 using Hangman.Messaging.GameSaga;
-using Hangman.Persistence.Entities;
 using Hangman.Persistence.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -27,6 +26,14 @@ namespace Hangman.Processor.Consumers
             this.logger = logger;
         }
 
+        /// <summary>
+        /// Prepare for game
+        /// - Guesses
+        /// - GuessedWord
+        /// - WordLeft
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
         public async Task Consume(ConsumeContext<SetupProcessing> ctx)
         {
             var msg = ctx.Message;
@@ -43,10 +50,15 @@ namespace Hangman.Processor.Consumers
                 game.Word = word;
                 game.WordLeft = word;
 
-                game.GuessedWord = Enumerable.Range(0, word.Length).Select(x => '-').ToArray();
+                game.GuessedWord = Enumerable.Range(0, word.Length)
+                                            .Select(x => '-')
+                                            .ToArray();
+
                 game.Guesses = new List<char>();
 
                 await dbContext.GameSagas.ReplaceOneAsync(x => x.CorrelationId == game.CorrelationId, game);
+
+                logger.LogInformation("Processing setup done");
 
                 await ep.Send(new ProcessingSetup
                 {

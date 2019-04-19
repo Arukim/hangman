@@ -18,6 +18,5 @@ namespace Hangman.Messaging
 
             return services;
         }
-
     }
 }

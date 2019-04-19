@@ -72,6 +72,9 @@ namespace Tests
             Assert.AreEqual(7, saga.TurnsLeft);
         }
 
+        /// <summary>
+        /// Use this method to "push" message through async bus 
+        /// </summary>
         public async Task SendAndConfirm<T>(T msg) where T : class
         {
             await harness.InputQueueSendEndpoint.Send(msg);

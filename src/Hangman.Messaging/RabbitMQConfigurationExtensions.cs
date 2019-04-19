@@ -1,7 +1,4 @@
-﻿using Hangman.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 
 namespace Hangman.Messaging
 {

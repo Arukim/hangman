@@ -1,9 +1,11 @@
 ﻿using Hangman.Core;
-using MongoDB.Bson;
 using System.Collections.Generic;
 
 namespace Hangman.Messaging.GameSaga
 {
+    /// <summary>
+    /// Event to update WebUI state
+    /// </summary>
     public class GameState : BaseSagaEvent
     {
         public string Id { get; set; }

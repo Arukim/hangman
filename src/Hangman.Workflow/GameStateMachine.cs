@@ -195,7 +195,7 @@ namespace Hangman.Workflow
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "ProcessTurn sent")));
 
         /// <summary>
-        /// If there is recieved a Turn request while another turn is processed
+        /// If there is a Turn request while another turn is processed
         /// by processor service - reschedule it
         /// </summary>
         private EventActivityBinder<GameSaga, MakeTurn> HandleConcurrentTurn() =>
