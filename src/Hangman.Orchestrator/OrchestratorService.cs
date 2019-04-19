@@ -54,7 +54,12 @@ namespace Hangman.Orchestrator
                     // https://stackoverflow.com/questions/38716143/masstransit-saga-running-with-prefetch-1
                     e.UseInMemoryOutbox();
                     e.StateMachineSaga(stateMachine, repository);
+
                 });
+
+                // In-memory quartz do not provide persistence
+                // For production use separate quartz service or rabbitmq scheduling plugin
+                cfg.UseInMemoryScheduler();
             });
 
             logger.LogInformation("Starting MT bus");

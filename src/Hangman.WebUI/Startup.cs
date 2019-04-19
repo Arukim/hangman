@@ -36,9 +36,14 @@ namespace Hangman.WebUI
             var rmqSection = Configuration.GetSection(Constants.ConfigSections.Rabbit);
             var rmqConfig = rmqSection.Get<RabbitMQConfiguration>();
 
+            // Hostname must be unique for each instance of WebUI
+            // In docker it is set to container Id
+            // In K8S it is set to pod Id
+            var hostname = Environment.MachineName;
+
             services.AddMassTransit(x =>
             {
-                x.AddConsumer<GameStartedConsumer>();
+                x.AddConsumer<GameStatusConsumer>();
 
                 x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
@@ -48,19 +53,26 @@ namespace Hangman.WebUI
                         hostConfigurator.Password(rmqConfig.Password);
                     });
 
-                    cfg.ReceiveEndpoint(host, "queue-1", ep =>
+                    // Each instance of WebUI creates own exchange / queue pair
+                    cfg.ReceiveEndpoint(host, $"webui-{hostname}", ep =>
                     {
-                        ep.Consumer<GameStartedConsumer>(provider);
+                        // Delete exchange and queue 
+                        // If WebUI instance is switched off
+                        // Otherwise it would keep collecting messages
+                        ep.AutoDelete = true;
+                        // We don't care about persistance for this kind of events
+                        // Non-durable queue is much faster
+                        ep.Durable = false;
+                        ep.Consumer<GameStatusConsumer>(provider);
                     });
 
                     cfg.ConfigureEndpoints(provider);
                 }));
-
+                                
                 x.AddRequestClient<GameStatus>();
-
             });
 
-            services.AddScoped<GameStartedConsumer>();
+            services.AddScoped<GameStatusConsumer>();
 
 
             // In production, the React files will be served from this directory

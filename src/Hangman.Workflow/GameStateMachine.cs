@@ -3,8 +3,10 @@ using Automatonymous.Binders;
 using Hangman.Messaging;
 using Hangman.Messaging.GameSaga;
 using Hangman.Persistence.Entities;
+using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 
 namespace Hangman.Workflow
@@ -112,11 +114,10 @@ namespace Hangman.Workflow
                 HandleMakeTurn()
                     .TransitionTo(ProcessingTurn));
 
-            // TODO: handle MakeTurn requests
-            // during processingTurn (add retry policy or reschedule a message)
             During(ProcessingTurn,
                 HandleTurnProcessed()
                     .TransitionTo(WaitingForTurn),
+                HandleConcurrentTurn(),
                 HandleWonGame()
                     .Finalize(),
                 HandleLostGame()
@@ -177,7 +178,7 @@ namespace Hangman.Workflow
 
         private EventActivityBinder<GameSaga, MakeTurn> HandleMakeTurn() =>
             When(MakeTurnReceived)
-                    .Then(ctx => logger.LogInformation(SagaMessage(ctx, "MakeTurn received received")))
+                    .Then(ctx => logger.LogInformation(SagaMessage(ctx, "MakeTurn received")))
                     .ThenAsync(async ctx =>
                     {
                         var saga = ctx.Instance;
@@ -190,6 +191,24 @@ namespace Hangman.Workflow
                         });
                     })
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "ProcessTurn sent")));
+
+        /// <summary>
+        /// If there is recieved a Turn request while another turn is processed
+        /// by processor service - reschedule it
+        /// </summary>
+        private EventActivityBinder<GameSaga, MakeTurn> HandleConcurrentTurn() =>
+            When(MakeTurnReceived)
+                .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Concurrent MakeTurn received")))
+                .ThenAsync(async ctx =>
+                {
+                    var consumer = ctx.CreateConsumeContext();
+
+                    // For production-grade code we need to add some retry / backoff policy
+                    // Otherwise system may be flooded when no Processors are available
+                    await consumer.ScheduleSend(rmqConfig.GetEndpoint(Queues.GameSaga),
+                        DateTime.UtcNow.AddMilliseconds(250),
+                        ctx.Data);
+                });
 
         private EventActivityBinder<GameSaga, TurnProcessed> HandleTurnProcessed() =>
             When(TurnProcessedRecevied)
