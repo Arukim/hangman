@@ -37,7 +37,7 @@ namespace Hangman.Dictionary
                 {
                     ep.PrefetchCount = (ushort)Environment.ProcessorCount;
 
-                    ep.Consumer<SetupGameConsumer>(provider);
+                    ep.Consumer<SelectWordConsumer>(provider);
                 });
             });
 

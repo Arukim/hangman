@@ -51,7 +51,7 @@ namespace Hangman.WebUI.Controllers
         }
 
         [HttpGet("game/{id}")]
-        public async Task<GameStatus> GetGame(string id)
+        public async Task<GameState> GetGame(string id)
         {
             var gameId = new ObjectId(id);
 
@@ -59,7 +59,7 @@ namespace Hangman.WebUI.Controllers
                 .Find(x => x.Id == gameId)
                 .FirstAsync();
 
-            return new GameStatus
+            return new GameState
             {
                 Id = game.Id.ToString(),
                 Status = game.CurrentState,

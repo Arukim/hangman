@@ -13,7 +13,7 @@ namespace Hangman.Dictionary
         protected override void BootstrapServices(IServiceCollection services)
         {
             services
-                .AddScoped<SetupGameConsumer>()
+                .AddScoped<SelectWordConsumer>()
                 .AddSingleton<DictionaryService>()
                 .AddSingleton<WordGenerator>()
                 .AddMessaging(configuration)

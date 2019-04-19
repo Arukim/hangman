@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace Hangman.Dictionary.Consumers
 {
@@ -10,7 +11,9 @@ namespace Hangman.Dictionary.Consumers
 
         public WordGenerator()
         {
-            words = File.ReadAllLines("words_alpha.txt");
+            words = File.ReadLines("words_alpha.txt")
+                    .Where(x => x.Length >= 7)
+                    .ToArray();
         }
 
         public string Get() => words[random.Next() % words.Length];

@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Hangman.Dictionary
 {
-    public class SetupGameConsumer : IConsumer<SelectWord>
+    public class SelectWordConsumer : IConsumer<SelectWord>
     {
         private readonly ILogger logger;
         private readonly RabbitMQConfiguration rmqConfig;
         private readonly WordGenerator wordGenerator;
 
-        public SetupGameConsumer(ILogger<SetupGameConsumer> logger,
+        public SelectWordConsumer(ILogger<SelectWordConsumer> logger,
             IOptions<RabbitMQConfiguration> rmqOption,
             WordGenerator wordGenerator)
         {

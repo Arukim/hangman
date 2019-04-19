@@ -43,7 +43,7 @@ namespace Hangman.WebUI
 
             services.AddMassTransit(x =>
             {
-                x.AddConsumer<GameStatusConsumer>();
+                x.AddConsumer<GameStateConsumer>();
 
                 x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
@@ -63,16 +63,16 @@ namespace Hangman.WebUI
                         // We don't care about persistance for this kind of events
                         // Non-durable queue is much faster
                         ep.Durable = false;
-                        ep.Consumer<GameStatusConsumer>(provider);
+                        ep.Consumer<GameStateConsumer>(provider);
                     });
 
                     cfg.ConfigureEndpoints(provider);
                 }));
                                 
-                x.AddRequestClient<GameStatus>();
+                x.AddRequestClient<GameState>();
             });
 
-            services.AddScoped<GameStatusConsumer>();
+            services.AddScoped<GameStateConsumer>();
 
 
             // In production, the React files will be served from this directory

@@ -165,7 +165,7 @@ namespace Hangman.Workflow
             {
                 var saga = ctx.Instance;
 
-                await ctx.Publish(new GameStatus
+                await ctx.Publish(new GameState
                 {
                     Id = saga.Id.ToString(),
                     Status = saga.CurrentState,
@@ -223,7 +223,7 @@ namespace Hangman.Workflow
                         saga.TurnsLeft--;
                     }
 
-                    await ctx.Publish(new GameStatus
+                    await ctx.Publish(new GameState
                     {
                         Id = saga.Id.ToString(),
                         Status = saga.CurrentState,
@@ -256,7 +256,7 @@ namespace Hangman.Workflow
                  .ThenAsync(async ctx =>
                  {
                      var saga = ctx.Instance;
-                     await ctx.Publish(new GameStatus
+                     await ctx.Publish(new GameState
                      {
                          Id = saga.Id.ToString(),
                          Status = saga.CurrentState,
