@@ -43,6 +43,10 @@ namespace Tests
         }
         #endregion
 
+        /// <summary>
+        /// Sample test case for Saga
+        /// </summary>
+        /// <returns></returns>
         [Test]
         public async Task GameSaga_positive_test_case()
         {
@@ -54,7 +58,7 @@ namespace Tests
 
             var saga = sagaTestHarness.Sagas.Contains(correlationId);
 
-            Assert.AreEqual(nameof(stateMachine.Created), saga.CurrentState);
+            Assert.AreEqual(nameof(stateMachine.Creating), saga.CurrentState);
 
             Assert.IsTrue(harness.Sent.Select<SelectWord>().Any());
 
@@ -64,33 +68,8 @@ namespace Tests
                 Word = testWord
             });
 
-            Assert.AreEqual(testWord, saga.Word);
-            Assert.AreEqual(10, saga.TurnsLeft);
-
-            await SendAndConfirm(new MakeTurn
-            {
-                CorrelationId = correlationId
-            });
-
-            await SendAndConfirm(new TurnProcessed
-            {
-                CorrelationId = correlationId,
-                Accepted = true,
-                HasWon = false
-            });
-            Assert.AreEqual(9, saga.TurnsLeft);
-
-
-            await SendAndConfirm(new MakeTurn
-            {
-                CorrelationId = correlationId
-            });
-
-            await SendAndConfirm(new TurnProcessed
-            {
-                CorrelationId = correlationId,
-                HasWon = true
-            });
+            Assert.IsTrue(harness.Sent.Select<SetupProcessing>().First().Context.Message.Word == testWord);
+            Assert.AreEqual(7, saga.TurnsLeft);
         }
 
         public async Task SendAndConfirm<T>(T msg) where T : class
