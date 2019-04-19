@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { actionCreators } from '../store/Home';
@@ -25,8 +25,12 @@ const Home = props => (
             <li><strong>Navigate to sources</strong>. Please, browse sources at <a href='https://github.com/Arukim/hangman'>github</a>.</li>
             <li><strong>Test the application</strong>. Press <strong> create game </strong> button to start a game.</li>
         </ul>
-        <br/>
-        <button className="btn btn-primary" onClick={props.createGame}>Start Game</button>
+        <br />
+        <div className="row">
+            <button className="btn btn-primary col-md-4" onClick={props.createGameEng}>Start Game</button>
+            <div className="col-md-4"></div>
+            <button className="btn btn-primary col-md-4" onClick={props.createGameRus}>Начать игру</button>
+        </div>
     </div>
 );
 

@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Hangman.Core;
+using MongoDB.Bson;
 using System.Collections.Generic;
 
 namespace Hangman.Messaging.GameSaga
@@ -11,5 +12,6 @@ namespace Hangman.Messaging.GameSaga
         public List<char> Guesses { get; set; }
         public int TurnsLeft { get; set; }
         public bool HasWon { get; set; }
+        public Language Language { get; set; }
     }
 }

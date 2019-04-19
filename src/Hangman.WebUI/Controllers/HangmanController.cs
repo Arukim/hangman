@@ -1,4 +1,5 @@
-﻿using Hangman.Messaging;
+﻿using Hangman.Core;
+using Hangman.Messaging;
 using Hangman.Messaging.GameSaga;
 using Hangman.Persistence.Entities;
 using Hangman.Persistence.Interfaces;
@@ -30,8 +31,8 @@ namespace Hangman.WebUI.Controllers
             rmqConfig = rmqOptions.Value;
         }
 
-        [HttpPost("game")]
-        public async Task<NewGame> PostGame()
+        [HttpPost("game/{lang}")]
+        public async Task<NewGame> PostGame(Language lang)
         {
             var id = Guid.NewGuid();
             var gameSaga = new GameSaga
@@ -39,8 +40,10 @@ namespace Hangman.WebUI.Controllers
                 TurnsLeft = -1,
                 CorrelationId = id,
                 GuessedWord = new char[] { },
-                Guesses = new List<char> { }
+                Guesses = new List<char> { },
+                Language = lang
             };
+
             await dbContext.GameSagas.InsertOneAsync(gameSaga);
 
             var ep = await busControl.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.GameSaga));
@@ -66,7 +69,8 @@ namespace Hangman.WebUI.Controllers
                 GuessedWord = string.Join("", game.GuessedWord),
                 CorrelationId = game.CorrelationId,
                 Guesses = game.Guesses,
-                TurnsLeft = game.TurnsLeft
+                TurnsLeft = game.TurnsLeft,
+                Language = game.Language
             };
         }
 

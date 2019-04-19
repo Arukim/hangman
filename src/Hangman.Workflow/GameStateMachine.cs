@@ -136,7 +136,8 @@ namespace Hangman.Workflow
                         var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.Dictionary));
                         await ep.Send(new SelectWord
                         {
-                            CorrelationId = saga.CorrelationId
+                            CorrelationId = saga.CorrelationId,
+                            Language = saga.Language
                         });
                     })
                     .Then(ctx => logger.LogInformation(SagaMessage(ctx, "Setup game sent")));
@@ -172,7 +173,8 @@ namespace Hangman.Workflow
                     CorrelationId = saga.CorrelationId,
                     Guesses = new List<char> { },
                     GuessedWord = ctx.Data.GuessedWord,
-                    TurnsLeft = saga.TurnsLeft
+                    TurnsLeft = saga.TurnsLeft,
+                    Language = saga.Language
                 });
             });
 
@@ -231,6 +233,7 @@ namespace Hangman.Workflow
                         GuessedWord = msg.GuessedWord,
                         Guesses = msg.Guesses,
                         TurnsLeft = saga.TurnsLeft,
+                        Language = saga.Language,
                         HasWon = ctx.Data.HasWon
                     });
 
@@ -264,6 +267,7 @@ namespace Hangman.Workflow
                          GuessedWord = saga.Word,
                          Guesses = saga.Guesses,
                          TurnsLeft = saga.TurnsLeft,
+                         Language = saga.Language,
                          HasWon = false
                      });
                  })

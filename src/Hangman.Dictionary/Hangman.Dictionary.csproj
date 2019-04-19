@@ -8,11 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="words_alpha.txt" />
+    <None Remove="words_eng.txt" />
+    <None Remove="words_rus.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="words_alpha.txt">
+    <Content Include="words_eng.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="words_rus.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

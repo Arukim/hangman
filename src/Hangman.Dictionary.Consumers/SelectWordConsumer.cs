@@ -32,7 +32,7 @@ namespace Hangman.Dictionary
 
                 var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.GameSaga));
 
-                var word = wordGenerator.Get();
+                var word = wordGenerator.Get(msg.Language);
 
                 logger.LogInformation($"Selected word {word}");
 

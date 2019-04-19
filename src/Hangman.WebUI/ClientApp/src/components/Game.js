@@ -62,7 +62,13 @@ class Game extends Component {
                 {
                     this.props.turnsLeft >= 0 ?
                         <div>
-                            <h3> You have {this.props.turnsLeft} turns left </h3>
+                            <h3>
+                                {this.props.language === 0 ?
+                                    <span> You have {this.props.turnsLeft} turns left </span>
+                                    :
+                                    <span> Попыток осталось: {this.props.turnsLeft} </span>
+                                }
+                                </h3>
 
                             <h3> {this.props.guessedWord} </h3>
                             <form onSubmit={this.onSubmitTurn}>

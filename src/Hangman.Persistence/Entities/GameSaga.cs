@@ -1,4 +1,5 @@
 ﻿using Automatonymous;
+using Hangman.Core;
 using MassTransit.MongoDbIntegration.Saga;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -26,5 +27,6 @@ namespace Hangman.Persistence.Entities
         public string WordLeft { get; set; }
 
         public List<char> Guesses { get; set; }
+        public Language Language { get; set; }
     }
 }
