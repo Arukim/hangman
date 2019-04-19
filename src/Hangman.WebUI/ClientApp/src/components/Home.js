@@ -27,9 +27,9 @@ const Home = props => (
         </ul>
         <br />
         <div className="row">
-            <button className="btn btn-primary col-md-4" onClick={props.createGameEng}>Start Game</button>
-            <div className="col-md-4"></div>
             <button className="btn btn-primary col-md-4" onClick={props.createGameRus}>Начать игру</button>
+            <div className="col-md-4"></div>
+            <button className="btn btn-primary col-md-4" onClick={props.createGameEng}>Start Game</button>
         </div>
     </div>
 );
