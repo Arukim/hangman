@@ -86,15 +86,16 @@ namespace Hangman.Processor.Consumers
             ///</summary>
             bool CheckGuess(GameSaga gameSaga)
             {
+                var hasGuessed = false;
                 for (int i = 0; i < gameSaga.Word.Length; i++)
                 {
                     if (gameSaga.Word[i] == msg.Guess)
                     {
                         gameSaga.GuessedWord[i] = msg.Guess;
-                        return true;
+                        hasGuessed = true;
                     }
                 }
-                return false;
+                return hasGuessed;
             }
         }
     }
