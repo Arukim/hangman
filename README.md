@@ -1,4 +1,4 @@
-# hangman
+# Hangman game
 A simple game to demonstrate RabbitMQ + MassTransit + Saga
 
 ## Next steps
@@ -23,6 +23,17 @@ A simple game to demonstrate RabbitMQ + MassTransit + Saga
   - Original Princeton paper http://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf
   - Arnon Rotem-Gal-Oz's description http://www.rgoarchitects.com/Files/SOAPatterns/Saga.pdf
 
+
+## Architecture
+
+### Messaging
+
+![Saga queues](img/saga_queues.png)
+
+### Deployment
+
+![Saga queues](img/deployment.png)
+
 ### Discover the sources
 
 - **build** - bat files to automate docker image build
@@ -41,6 +52,11 @@ A simple game to demonstrate RabbitMQ + MassTransit + Saga
   - **Hangman.WebUI** - web-service, hosting user frontend and related API
   - **Hangman.Workflow** - business logic for Saga
   - **Hangman.Workflow.Tests** - unit tests for Saga
+
+
+### Saga state machine
+
+![Saga queues](img/saga_statemachine.png)
   
 
 

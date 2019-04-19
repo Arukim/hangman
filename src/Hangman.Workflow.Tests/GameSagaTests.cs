@@ -56,7 +56,7 @@ namespace Tests
 
             Assert.AreEqual(nameof(stateMachine.Created), saga.CurrentState);
 
-            Assert.IsTrue(harness.Sent.Select<SetupGame>().Any());
+            Assert.IsTrue(harness.Sent.Select<SelectWord>().Any());
 
             await SendAndConfirm(new WordSelected
             {

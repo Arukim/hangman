@@ -8,6 +8,6 @@
         public const string Dictionary = "dictionary";
         public const string Processor = "processor";
         public const string UI = "ui";
-        public const string GameSaga = "orchestrator.gameSaga";
+        public const string GameSaga = "gameSaga";
     }
 }

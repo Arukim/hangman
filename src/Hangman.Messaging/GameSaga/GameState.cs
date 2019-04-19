@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Hangman.Messaging.GameSaga
 {
-    public class GameStatus : BaseSagaEvent
+    public class GameState : BaseSagaEvent
     {
         public string Id { get; set; }
         public string Status { get; set; }

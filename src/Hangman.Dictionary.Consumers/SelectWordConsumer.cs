@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Hangman.Dictionary
 {
-    public class SetupGameConsumer : IConsumer<SetupGame>
+    public class SetupGameConsumer : IConsumer<SelectWord>
     {
         private readonly ILogger logger;
         private readonly RabbitMQConfiguration rmqConfig;
@@ -23,7 +23,7 @@ namespace Hangman.Dictionary
             this.wordGenerator = wordGenerator;
         }
 
-        public async Task Consume(ConsumeContext<SetupGame> ctx)
+        public async Task Consume(ConsumeContext<SelectWord> ctx)
         {
             var msg = ctx.Message;
 

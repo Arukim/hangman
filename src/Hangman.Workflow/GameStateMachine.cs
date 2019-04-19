@@ -134,7 +134,7 @@ namespace Hangman.Workflow
                         var saga = ctx.Instance;
 
                         var ep = await ctx.GetSendEndpoint(rmqConfig.GetEndpoint(Queues.Dictionary));
-                        await ep.Send(new SetupGame
+                        await ep.Send(new SelectWord
                         {
                             CorrelationId = saga.CorrelationId
                         });
