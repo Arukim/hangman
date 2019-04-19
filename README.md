@@ -1,4 +1,6 @@
 # Hangman game
+![Hangman Image](img/hangman.png)
+
 A simple game to demonstrate RabbitMQ + MassTransit + Saga
 
 ## Next steps
